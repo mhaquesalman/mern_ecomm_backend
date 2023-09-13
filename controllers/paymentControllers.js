@@ -136,20 +136,24 @@ module.exports.initPayment = async (req, res) => {
     });
 
     response = await payment.paymentInit();
+    
     const order = new Order({ 
         cartItems: cartItems, user: userId, 
         transaction_id: tran_id, address: profile, 
         productNames: product_name });
+
     if (response.status === 'SUCCESS') {
         order.sessionKey = response['sessionkey'];
         await order.save();
+
         const cartProductItems = cartItems.map(item => new CartProductSchema({
             product: item.product,
             price: item.price,
             count: item.count
         }))
+
         const purchase = new Purchase({
-            product: cartProductItems,
+            items: cartProductItems,
             transaction_id: tran_id,
             user: userId
         })
