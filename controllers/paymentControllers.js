@@ -80,7 +80,10 @@ module.exports.initPayment = async (req, res) => {
     const total_item = cartItems.map(item => item.count).reduce((a, b) => a + b, 0);
 
     const product_names_map = cartItems.map(item => item.product.name)
-    const product_name = product_names_map.join(" ")
+    let product_name = ""
+    product_names_map.forEach(name => {
+        product_name = product_name.concat(name + " ")
+    })
     
     const tran_id = '_' + Math.random().toString(36).substr(2, 9) + (new Date()).getTime();
 
@@ -139,25 +142,32 @@ module.exports.initPayment = async (req, res) => {
     response = await payment.paymentInit();
 
     const order = new Order({ 
-        cartItems: cartItems, user: userId, 
-        transaction_id: tran_id, address: profile, 
-        productNames: product_name });
+        cartItems: cartItems, 
+        user: userId, 
+        transaction_id: tran_id, 
+        address: profile,
+        orderAmount: total_amount,
+        orderCount: total_item, 
+        productNames: product_name 
+    });
 
     if (response.status === 'SUCCESS') {
         order.sessionKey = response['sessionkey'];
         await order.save();
 
-        const cartProductItems = cartItems.map(item => new PurchaseProduct({
-            product: item.product,
-            price: item.price,
-            count: item.count
-        }))
-
-        
+        // const cartProductItems = cartItems.map(item => new PurchaseProduct({
+        //     product: item.product,
+        //     price: item.price,
+        //     count: item.count
+        // }))
+       
         const purchase = new Purchase({
-            items: cartProductItems,
+            items: cartItems,
             transaction_id: tran_id,
-            user: userId
+            user: userId,
+            purchaseAmount: total_amount,
+            purchaseCount: total_item,
+            productNames: product_name
         })
         await purchase.save()
     }
@@ -168,10 +178,19 @@ module.exports.initPayment = async (req, res) => {
 module.exports.getPurchase = async (req, res) => {
     const userId = req.user._id;
     const purchase = await Purchase.find({ user: userId })
-    .populate('product', 'name')
 
     if (purchase) {
         return res.status(200).send(purchase)
+    } else {
+        return res.status(200).send([])
+    }
+}
+
+module.exports.getOrders = async (req, res) => {
+    const order = await Order.find().populate("user", "name")
+
+    if (order) {
+        return res.status(200).send(order)
     } else {
         return res.status(200).send([])
     }

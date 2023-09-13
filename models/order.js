@@ -26,6 +26,8 @@ module.exports.Order = model('Order', Schema({
         ref: "User"
     },
     sessionKey: String,
+    orderAmount: Number,
+    orderCount: Number,
     productNames: String,
     validatePayment: { type: Boolean, default: false}
 }, { timestamps: true }))
