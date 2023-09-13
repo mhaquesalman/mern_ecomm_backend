@@ -1,20 +1,20 @@
 const { Schema, model } = require('mongoose');
-const { CartItemSchema } = require('./cartItem');
 
-module.exports.Order = model('Order', Schema({
-    cartItems: [CartItemSchema],
+module.exports.CartProductSchema = Schema({
+    product: {
+        type: Schema.Types.ObjectId,
+        ref: "Product",
+        required: true,
+    },
+    price: Number,
+    count: Number,
+});
+
+module.exports.Purchase = model('Purchase', Schema({
+    items: [CartProductSchema],
     transaction_id: {
         type: String,
         unique: true,
-    },
-    address: {
-        phone: String,
-        address1: String,
-        address2: String,
-        city: String,
-        state: String,
-        postcode: Number,
-        country: String,
     },
     status: {
         type: String,
@@ -25,7 +25,5 @@ module.exports.Order = model('Order', Schema({
         type: Schema.Types.ObjectId,
         ref: "User"
     },
-    sessionKey: String,
-    productNames: String,
     validatePayment: { type: Boolean, default: false}
 }, { timestamps: true }))

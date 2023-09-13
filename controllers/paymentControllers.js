@@ -3,6 +3,7 @@ const { Profile } = require('../models/profile');
 const PaymentSession = require('ssl-commerz-node').PaymentSession;
 const { Order } = require('../models/order');
 const { Payment } = require('../models/payment');
+const { Purchase, CartProductSchema } = require('../models/Purchase')
 const path = require('path');
 const fetch = require('node-fetch');
 let formData = require('form-data')
@@ -19,8 +20,10 @@ module.exports.ipn = async (req, res) => {
     if (payment['status'] === 'VALID') {
         const order = await Order.updateOne({ transaction_id: tran_id }, { status: 'Complete' });
         await CartItem.deleteMany(order.cartItems);
+        await Purchase.updateOne({ transaction_id: tran_id }, { status: 'Complete' })
     } else {
         await Order.deleteOne({ transaction_id: tran_id });
+        await Purchase.deleteOne({ transaction_id: tran_id });
     }
     await payment.save()
     if (payment["status"] === "VALID") {
@@ -39,7 +42,8 @@ module.exports.ipn = async (req, res) => {
         .then(res => res.json())
         .then(async (data) => {
             if (data["status"] === "VALID" || "VALIDATED") {
-                await Order.updateOne({ transaction_id: tran_id }, { status: 'Paid', validatePayment: true })
+                await Order.updateOne({ transaction_id: tran_id }, { validatePayment: true })
+                await Purchase.updateOne({ transaction_id: tran_id }, { validatePayment: true })
                 return res.status(200).send({
                     message: "Validation complete!",
                     data: data
@@ -50,17 +54,21 @@ module.exports.ipn = async (req, res) => {
                 })
             }
         })
-        .catch(err => console.log("Validation error! ", err))
+        .catch(err => {
+            console.log("Validation error! ", err)
+            return res.status(200).send("IPN Incomplete!");
+        })
+    } else {
+        return res.status(200).send("IPN Unsuccessful!");
     }
-    return res.status(200).send("IPN");
-
+   
 }
 
 
 module.exports.initPayment = async (req, res) => {
     const userId = req.user._id;
     const amount = req.query.amt;
-    const cartItems = await CartItem.find({ user: userId });
+    const cartItems = await CartItem.find({ user: userId }).populate('product', 'name');
     const profile = await Profile.findOne({ user: userId });
 
     const { address1, address2, city, state, postcode, country, phone } = profile;
@@ -72,10 +80,7 @@ module.exports.initPayment = async (req, res) => {
 
     const product_names_map = cartItems.map(item => item.product.name)
     const product_name = product_names_map.join(" ")
-    console.log("product_names_map ", product_names_map)
-    console.log("product_name ", product_name)
     
-
     const tran_id = '_' + Math.random().toString(36).substr(2, 9) + (new Date()).getTime();
 
     const payment = new PaymentSession(true, process.env.STORE_ID, process.env.STORE_PASSWORD);
@@ -138,16 +143,29 @@ module.exports.initPayment = async (req, res) => {
     if (response.status === 'SUCCESS') {
         order.sessionKey = response['sessionkey'];
         await order.save();
+        const cartProductItems = cartItems.map(item => new CartProductSchema({
+            product: item.product,
+            price: item.price,
+            count: item.count
+        }))
+        const purchase = new Purchase({
+            product: cartProductItems,
+            transaction_id: tran_id,
+            user: userId
+        })
+        await purchase.save()
     }
     return res.status(200).send(response);
 }
 
 
-module.exports.getOrders = async (req, res) => {
+module.exports.getPurchase = async (req, res) => {
     const userId = req.user._id;
-    const orders = await Order.find({ user: userId })
-    if (orders) {
-        return res.status(200).send(orders)
+    const purchase = await Purchase.find({ user: userId })
+    .populate('product', 'name')
+
+    if (purchase) {
+        return res.status(200).send(purchase)
     } else {
         return res.status(200).send([])
     }

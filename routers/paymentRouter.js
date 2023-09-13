@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const { initPayment, ipn, paymentSuccess, getOrders } = require('../controllers/paymentControllers');
+const { initPayment, ipn, paymentSuccess, getPurchase } = require('../controllers/paymentControllers');
 const authorize = require('../middlewares/authorize');
 
 router.route('/')
@@ -9,7 +9,7 @@ router.route('/ipn')
     .post(ipn);
 
 router.route('/purchase')
-    .get(authorize, getOrders);        
+    .get(authorize, getPurchase);        
 
 router.route('/success')
     .post(paymentSuccess);
