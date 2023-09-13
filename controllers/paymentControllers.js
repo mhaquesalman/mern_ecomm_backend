@@ -136,7 +136,7 @@ module.exports.initPayment = async (req, res) => {
     });
 
     response = await payment.paymentInit();
-    
+
     const order = new Order({ 
         cartItems: cartItems, user: userId, 
         transaction_id: tran_id, address: profile, 
@@ -151,6 +151,8 @@ module.exports.initPayment = async (req, res) => {
             price: item.price,
             count: item.count
         }))
+        
+        console.log("cartProductItems ", cartProductItems)
 
         const purchase = new Purchase({
             items: cartProductItems,
