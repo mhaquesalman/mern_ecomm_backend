@@ -20,6 +20,7 @@
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "express-async-errors": "^3.1.1",
+    "form-data": "^4.0.0",
     "formidable": "^2.1.2",
     "joi": "^17.4.0",
     "jsonwebtoken": "^8.5.1",
@@ -27,6 +28,7 @@
     "mongodb": "^6.0.0",
     "mongoose": "5.12.1",
     "morgan": "^1.10.0",
+    "node-fetch": "2.6.6",
     "ssl-commerz-node": "^1.0.2"
   }
 }

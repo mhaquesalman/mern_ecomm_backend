@@ -19,11 +19,13 @@ module.exports.Order = model('Order', Schema({
     status: {
         type: String,
         default: "Pending",
-        enum: ["Pending", "Complete"]
+        enum: ["Pending", "Complete", "Paid"]
     },
     user: {
         type: Schema.Types.ObjectId,
         ref: "User"
     },
     sessionKey: String,
+    productNames: String,
+    validatePayment: { type: Boolean, default: false}
 }))
