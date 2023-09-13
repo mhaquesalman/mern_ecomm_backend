@@ -1,6 +1,6 @@
 const { Schema, model } = require('mongoose');
 
-module.exports.PurchaseProductSchema = Schema({
+const PurchaseProductSchema = Schema({
     product: {
         type: Schema.Types.ObjectId,
         ref: "Product",
