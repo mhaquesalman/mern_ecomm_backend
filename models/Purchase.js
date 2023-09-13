@@ -1,17 +1,8 @@
 const { Schema, model } = require('mongoose');
-
-module.exports.CartProductSchema = Schema({
-    product: {
-        type: Schema.Types.ObjectId,
-        ref: "Product",
-        required: true,
-    },
-    price: Number,
-    count: Number,
-});
+const { PurchaseProductSchema } = require('../models/PurchaseProduct')
 
 module.exports.Purchase = model('Purchase', Schema({
-    items: [CartProductSchema],
+    items: [PurchaseProductSchema],
     transaction_id: {
         type: String,
         unique: true,

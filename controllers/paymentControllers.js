@@ -3,7 +3,8 @@ const { Profile } = require('../models/profile');
 const PaymentSession = require('ssl-commerz-node').PaymentSession;
 const { Order } = require('../models/order');
 const { Payment } = require('../models/payment');
-const { Purchase, CartProductSchema } = require('../models/Purchase')
+const { Purchase } = require('../models/Purchase')
+const { PurchaseProduct } = require('../models/PurchaseProduct')
 const path = require('path');
 const fetch = require('node-fetch');
 let formData = require('form-data')
@@ -146,14 +147,13 @@ module.exports.initPayment = async (req, res) => {
         order.sessionKey = response['sessionkey'];
         await order.save();
 
-        const cartProductItems = cartItems.map(item => new CartProductSchema({
+        const cartProductItems = cartItems.map(item => new PurchaseProduct({
             product: item.product,
             price: item.price,
             count: item.count
         }))
-        
-        console.log("cartProductItems ", cartProductItems)
 
+        
         const purchase = new Purchase({
             items: cartProductItems,
             transaction_id: tran_id,
