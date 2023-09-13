@@ -72,7 +72,10 @@ module.exports.initPayment = async (req, res) => {
 
     const product_names_map = cartItems.map(item => item.product.name)
     const product_name = product_names_map.join(" ")
-  
+    console.log("product_names_map ", product_names_map)
+    console.log("product_name ", product_name)
+    
+
     const tran_id = '_' + Math.random().toString(36).substr(2, 9) + (new Date()).getTime();
 
     const payment = new PaymentSession(true, process.env.STORE_ID, process.env.STORE_PASSWORD);
