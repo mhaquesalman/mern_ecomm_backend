@@ -211,14 +211,16 @@ const productIds = {
 module.exports.updateProductSoldAndQuantity = async (req, res) => {
   const tid = req.body.tid
   const pids = req.body.pids
- 
+
+  console.log("soldQty ", req.body)
+
   pids.forEach(p => {
     Product.findById(p.id)
         .then( async (data) => {
           const { quantity } = data
           const newSold = p.count
           const newQuantity = quantity - newSold
-          Product.updateOne({ _id: p.id }, { quantity: newQuantity, sold: newSold})
+          await Product.updateOne({ _id: p.id }, { quantity: newQuantity, sold: newSold})
           await Purchase.updateOne({ transaction_id: tid }, { status: 'Complete' })
         })
   });
