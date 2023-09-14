@@ -21,9 +21,9 @@ module.exports.ipn = async (req, res) => {
     if (payment['status'] === 'VALID') {
         const order = await Order.updateOne({ transaction_id: tran_id }, { status: 'Complete' });
         await CartItem.deleteMany(order.cartItems);
-        await Purchase.updateOne({ transaction_id: tran_id }, { status: 'Complete' })
+        
     } else {
-        await Order.deleteOne({ transaction_id: tran_id });
+        Order.deleteOne({ transaction_id: tran_id });
         await Purchase.deleteOne({ transaction_id: tran_id });
     }
     await payment.save()
@@ -43,8 +43,8 @@ module.exports.ipn = async (req, res) => {
         .then(res => res.json())
         .then(async (data) => {
             if (data["status"] === "VALID" || "VALIDATED") {
-                await Order.updateOne({ transaction_id: tran_id }, { validatePayment: true })
-                await Purchase.updateOne({ transaction_id: tran_id }, { validatePayment: true })
+                Order.updateOne({ transaction_id: tran_id }, { validatePayment: true })
+                await Purchase.updateOne({ transaction_id: tran_id }, { validatePayment: true })  
                 return res.status(200).send({
                     message: "Validation complete!",
                     data: data
@@ -81,8 +81,9 @@ module.exports.initPayment = async (req, res) => {
 
     const product_names_map = cartItems.map(item => item.product.name)
     let product_name = ""
-    product_names_map.forEach(name => {
-        product_name = product_name.concat(name + " ")
+    product_names_map.forEach((name, i) => {
+        if (i == product_names_map.length - 1) product_name = product_name.concat(name)
+        else product_name = product_name.concat(name + ", ")
     })
     
     const tran_id = '_' + Math.random().toString(36).substr(2, 9) + (new Date()).getTime();

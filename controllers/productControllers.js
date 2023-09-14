@@ -3,6 +3,7 @@ const formidable = require('formidable');
 const fs = require('fs');
 const { Product, validate } = require('../models/product');
 const { Comment } = require('../models/Comment')
+const { Purchase } = require('../models/Purchase')
 
 module.exports.createProduct = async (req, res) => {
     let form = new formidable.IncomingForm();
@@ -193,6 +194,36 @@ module.exports.searchProduct = async (req, res) => {
 
 }
 
+const productIds = {
+  tid: "aafaf",
+  pids: [
+    {
+      id: 'aasas',
+      count: 1
+    },
+    {
+      id: 'adddf',
+      count: 1
+    }
+  ]
+}
+
+module.exports.updateProductSoldAndQuantity = async (req, res) => {
+  const tid = req.body.tid
+  const pids = req.body.pids
+ 
+  pids.forEach(p => {
+    Product.findById(p.id)
+        .then( async (data) => {
+          const { quantity } = data
+          const newSold = p.count
+          const newQuantity = quantity - newSold
+          Product.updateOne({ _id: p.id }, { quantity: newQuantity, sold: newSold})
+          await Purchase.updateOne({ transaction_id: tid }, { status: 'Complete' })
+        })
+  });
+  return res.status(200).send("Item updated!");
+}
 
 /* module.exports.sortyByProductRating = async (req, res) => {
   let q = req.query.q ? req.query.q : "";
