@@ -217,9 +217,9 @@ module.exports.updateProductSoldAndQuantity = async (req, res) => {
   pids.forEach(p => {
     Product.findById(p.id)
         .then( async (data) => {
-          const { quantity } = data
-          const newSold = p.count
-          const newQuantity = quantity - newSold
+          const { quantity, sold } = data
+          const newSold = sold + p.count
+          const newQuantity = quantity - p.count
           await Product.updateOne({ _id: p.id }, { quantity: newQuantity, sold: newSold})
           await Purchase.updateOne({ transaction_id: tid }, { status: 'Complete' })
         })
