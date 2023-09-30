@@ -11,8 +11,8 @@ module.exports.Product = model('Product', Schema({
         required: true,
     },
     quantity: Number,
-    rating: Number,
-    sold: Number,
+    rating: {type: Number, default: 0},
+    sold: {type: Number, default: 0},
     photo: {
         data: Buffer,
         contentType: String,
@@ -25,8 +25,6 @@ module.exports.validate = product => {
         description: Joi.string().max(2000).required(),
         price: Joi.number().required(),
         quantity: Joi.number().required(),
-        rating: Joi.number().required(),
-        sold: Joi.number().required(),
         category: Joi.string().required(),
     });
     return schema.validate(product);

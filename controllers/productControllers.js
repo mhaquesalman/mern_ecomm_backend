@@ -10,7 +10,7 @@ module.exports.createProduct = async (req, res) => {
     form.keepExtensions = true;
     form.parse(req, (err, fields, files) => {
         if (err) return res.status(400).send("Something went wrong!");
-        const { error } = validate(_.pick(fields, ["name", "description", "price", "category", "quantity", "rating", "sold"]));
+        const { error } = validate(_.pick(fields, ["name", "description", "price", "category", "quantity"]));
         if (error) return res.status(400).send(error.details[0].message);
 
         const product = new Product(fields);
@@ -27,7 +27,7 @@ module.exports.createProduct = async (req, res) => {
                     if (err) res.status(500).send("Internal Server error!");
                     else return res.status(201).send({
                         message: "Product Created Successfully!",
-                        data: _.pick(result, ["name", "description", "price", "category", "quantity", "rating", "sold"])
+                        data: _.pick(result, ["name", "description", "price", "category", "quantity"])
                     })
                 })
             })
@@ -77,7 +77,7 @@ module.exports.updateProductById = async (req, res) => {
     form.keepExtensions = true;
     form.parse(req, (err, fields, files) => {
         if (err) return res.status(400).send("Something wrong!");
-        const updatedFields = _.pick(fields, ["name", "description", "price", "category", "quantity", "rating", "sold"]);
+        const updatedFields = _.pick(fields, ["name", "description", "price", "category", "quantity"]);
         _.assignIn(product, updatedFields);
 
         if (files.photo) {
@@ -164,6 +164,7 @@ module.exports.searchProduct = async (req, res) => {
             path: {
               wildcard: "*",
             },
+            fuzzy: {}
           },
         },
       },
